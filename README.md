@@ -3,7 +3,7 @@
 
 Explore country data with ease in this interactive project built with Vue 3 and the Composition API using TypeScript. Designed to pull data from the [REST Countries API](https://restcountries.com/), this application offers a visually rich and responsive experience in both light and dark modes. We've prioritized a polished, user-friendly interface to provide seamless browsing and information access for each country.
 
- **[Live Demo](https://rest-countries-assignmnet-ali.vercel.app/)**
+ **[Live Demo](https://rest-countries-assignmnet-final.vercel.app/)**
 
 ## Project Highlights
 
