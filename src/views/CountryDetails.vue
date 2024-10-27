@@ -18,9 +18,10 @@
           v-if="loadings.fetchCountryDetails"
           type="image"
           elevation="24"
+          min-height="250"
           max-width="570"
           aspect-ratio="16/9"
-          class=" mx-auto h-100 "
+          class="mx-auto h-100"
         ></v-skeleton-loader>
         <v-lazy v-else :min-height="170" :options="{ threshold: 0.7 }" transition="fab-transition">
           <v-img
@@ -32,93 +33,84 @@
           />
         </v-lazy>
       </v-col>
-      <v-col cols="12" md="6" class="d-flex justify-center">
+      <v-col cols="12" md="6" class="d-flex ">
         <v-skeleton-loader
           v-if="loadings.fetchCountryDetails"
           color="transparent"
           type="article,paragraph"
         ></v-skeleton-loader>
-        <v-lazy v-else :min-height="170" :options="{ threshold: 0.7 }" transition="fab-transition">
-
-        <v-card
-          color="transparent"
-          flat
-          max-width="570"
-          class="detailsCard align-content-center"
-        >
-          <v-card-title>{{ country?.name.common }}</v-card-title>
-          <v-card-text>
-            <v-row no-gutters>
-              <v-col cols="12" md="6" class="d-flex flex-column">
-                <p>
-                  <strong>Native Name:</strong>
-                  {{ firstNativeName }}
-                </p>
-                <p>
-                  <strong>Population:</strong>
-                  {{ country?.population.toLocaleString() }}
-                </p>
-                <p>
-                  <strong>Region:</strong>
-                  {{ country?.region }}
-                </p>
-                <p>
-                  <strong>Sub Region:</strong>
-                  {{ country?.subregion }}
-                </p>
-                <p>
-                  <strong>Capital:</strong>
-                  {{ country?.capital[0] }}
-                </p>
-              </v-col>
-              <v-col cols="12" md="6" class="d-flex flex-column">
-                <p>
-                  <strong>Top Level Domain:</strong>
-                  {{ country?.tld[0] }}
-                </p>
-                <p>
-                  <strong>Currencies:</strong>
-                  {{ currencyName }}
-                </p>
-                <p>
-                  <strong>Languages:</strong>
-                  {{ languageList }}
-                </p>
-              </v-col>
-            </v-row>
-          </v-card-text>
-          <v-card-text class="d-flex">
-            <div class="bordersContainer">
-              <strong class="nowrap pe-3 ">Border Countries:</strong>
-              <v-btn
-                v-for="(border, index) in borderCountriesList"
-                :key="index"
-                size="x-small"
-                class="p-2 mx-1 mb-1"
-                :text="border"
-                @click="$router.push({ name: 'CountryDetails', params: { name: border } })"
-              ></v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-lazy>
-
+        <v-lazy class="w-100" v-else :min-height="170" :options="{ threshold: 0.7 }" transition="fab-transition">
+          <v-card color="transparent" flat max-width="570" class="detailsCard align-content-center">
+            <v-card-title>{{ country?.name.common }}</v-card-title>
+            <v-card-text>
+              <v-row no-gutters>
+                <v-col cols="12" md="6" class="d-flex flex-column">
+                  <p>
+                    <strong>Native Name:</strong>
+                    {{ firstNativeName }}
+                  </p>
+                  <p>
+                    <strong>Population:</strong>
+                    {{ country?.population.toLocaleString() }}
+                  </p>
+                  <p>
+                    <strong>Region:</strong>
+                    {{ country?.region }}
+                  </p>
+                  <p>
+                    <strong>Sub Region:</strong>
+                    {{ country?.subregion }}
+                  </p>
+                  <p>
+                    <strong>Capital:</strong>
+                    {{ country?.capital?.[0]||'N/A' }}
+                  </p>
+                </v-col>
+                <v-col cols="12" md="6" class="d-flex flex-column">
+                  <p>
+                    <strong>Top Level Domain:</strong>
+                    {{ country?.tld?.[0] || 'N/A' }}
+                  </p>
+                  <p>
+                    <strong>Currencies:</strong>
+                    {{ currencyName }}
+                  </p>
+                  <p>
+                    <strong>Languages:</strong>
+                    {{ languageList }}
+                  </p>
+                </v-col>
+              </v-row>
+            </v-card-text>
+            <v-card-text class="d-flex">
+              <div class="bordersContainer">
+                <strong class="nowrap pe-3">Border Countries:</strong>
+                <v-btn
+                  v-for="(border, index) in borderCountriesList"
+                  :key="index"
+                  size="x-small"
+                  class="p-2 mx-1 mb-1"
+                  :text="border"
+                  @click="$router.push({ name: 'CountryDetails', params: { name: border } })"
+                ></v-btn>
+              </div>
+              <!-- empty borders -->
+              <div v-show="!borderCountriesList.length" class="text-center">No Borders</div>
+            </v-card-text>
+          </v-card>
+        </v-lazy>
       </v-col>
     </v-row>
   </v-container>
-  <!-- <v-container v-else>
-    <v-row justify="center">
-      <v-col>
-        <p>Loading country details...</p>
-      </v-col>
-    </v-row>
-  </v-container> -->
 </template>
 
 <script setup lang="ts">
+import { useGlobal } from '@/store';
 import { ref, onMounted, computed, reactive } from 'vue';
 import apiService from '@/apiService';
 import { useRoute } from 'vue-router';
+
+const globalStore = useGlobal(); // Access the global store
 
 const route = useRoute();
 
@@ -155,8 +147,6 @@ const fetchCountryDetails = async () => {
     if (country.value?.borders) {
       const borderPromises = country.value.borders.map(async borderCode => {
         const borderResponse = await fetch(`https://restcountries.com/v3.1/alpha/${borderCode}`);
-        // const borderResponse = await apiService.getCountryByCode(borderCode);
-        // TODO convert to APIService method
         const borderData = await borderResponse.json();
         return { [borderCode]: borderData[0].name.common };
       });
@@ -164,7 +154,11 @@ const fetchCountryDetails = async () => {
       borderCountries.value = Object.assign({}, ...borderResults);
     }
   } catch (error) {
-    console.log(error);
+    const errorMessage =
+      (error as { response?: { message?: string }; message?: string })?.response?.message ||
+      (error as { message?: string })?.message ||
+      'An error has occurred';
+    globalStore.message = errorMessage;
   } finally {
     loadings.fetchCountryDetails = false;
   }
@@ -201,7 +195,6 @@ const borderCountriesList = computed(() => {
 onMounted(() => {
   fetchCountryDetails();
 });
-console.log('🚀 ~ onMounted ~ route.params.name:', route.params.name);
 </script>
 
 <style scoped>
@@ -218,7 +211,7 @@ console.log('🚀 ~ onMounted ~ route.params.name:', route.params.name);
 :deep(.v-skeleton-loader__image) {
   height: 100%;
 }
-.flag{
+.flag {
   max-height: 300px;
 }
 </style>

@@ -12,13 +12,11 @@ import {
 } from 'vue';
 
 import { useTheme } from 'vuetify';
-import { useDisplay } from 'vuetify'
 
 // Components
 import logo from '@/assets/logo.png';
 import AppBarMenuComponent from '@/components/AppBarMenuComponent.vue';
 
-const { smAndDown, mdAndUp } = useDisplay()
 
 
 /** Vuetify Theme */
@@ -94,7 +92,7 @@ onMounted(() => {
       <v-progress-circular indeterminate size="64" />
     </v-overlay>
 
-    <v-snackbar v-model="snackbarVisibility" @update:model-value="onSnackbarChanged">
+    <v-snackbar color="red" v-model="snackbarVisibility" @update:model-value="onSnackbarChanged">
       {{ snackbarText }}
       <template #actions>
         <v-btn icon="mdi-close" @click="onSnackbarChanged" />
@@ -102,7 +100,7 @@ onMounted(() => {
     </v-snackbar>
 
     <v-footer app elevation="3">
-      <span class="mr-5">2024 &copy;</span>
+      <span class="mr-5">Made By Ali Arghyani Oct 2024 &copy;</span>
     </v-footer>
   </v-app>
   <teleport to="head">
@@ -112,8 +110,12 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
-@use 'vuetify/_settings';
+@use 'vuetify/_settings' as settings;
 @import url('https://fonts.googleapis.com/css?family=Nunito+Sans:300,600,800&display=swap');
+
+// Custom color variables
+$grey-lighten-2: #f5f5f5; // Define your custom grey colors here if needed
+$grey-base: #9e9e9e;
 
 #app {
   font-family: 'Nunito Sans', sans-serif;
@@ -126,13 +128,11 @@ onMounted(() => {
 }
 
 html {
-  // Fix always scrollbar shown.
   overflow-y: auto;
   // Modern scrollbar style
   scrollbar-width: thin;
-  scrollbar-color: map-get(settings.$grey, 'lighten-2') map-get(settings.$grey, 'base');
+  scrollbar-color: $grey-lighten-2 $grey-base;
 }
-// @TODO map-get has error in vite build mode
 
 ::-webkit-scrollbar {
   width: 0.5rem;
@@ -141,12 +141,12 @@ html {
 
 ::-webkit-scrollbar-track {
   box-shadow: inset 0 0 0.5rem rgba(0, 0, 0, 0.1);
-  background-color: map-get(settings.$grey, 'lighten-2');
+  background-color: $grey-lighten-2;
 }
 
 ::-webkit-scrollbar-thumb {
   border-radius: 0.5rem;
-  background-color: map-get(settings.$grey, 'base');
+  background-color: $grey-base;
   box-shadow: inset 0 0 0.5rem rgba(0, 0, 0, 0.1);
 }
 
@@ -155,19 +155,19 @@ html {
   overflow-y: auto;
 }
 
-// Fix app-bar's progress-bar
 .v-app-bar .v-progress-linear {
   position: absolute;
   bottom: 0;
 }
+
 @media screen and (max-width: 580px) {
-  .v-toolbar-title , .v-toolbar-title__placeholder {
+  .v-toolbar-title, .v-toolbar-title__placeholder {
     font-size: 16px !important;
-    text-wrap: nowrap;
-    text-overflow: unset;
+    white-space: nowrap;
     overflow: visible !important;
+  }
 }
-}
+
 .v-toolbar-title {
   font-weight: 600 !important;
 }

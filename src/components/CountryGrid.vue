@@ -1,6 +1,7 @@
 <template>
   <v-container class="fill-height">
-    <v-row no-gutters class="d-flex flex-row align-items-center justify-content-between">
+    <v-row no-gutters class="d-flex flex-row align-items-center justify-space-between ">
+      <!-- Search Input for Country Name -->
       <v-col cols="12" sm="4" md="4">
         <v-text-field
           v-model="searchQuery"
@@ -17,6 +18,7 @@
         />
       </v-col>
 
+      <!-- Filter by Region Dropdown -->
       <v-col cols="12" sm="4" md="3">
         <v-select
           v-model="selectedRegion"
@@ -31,6 +33,8 @@
           :clearable="true"
         ></v-select>
       </v-col>
+
+      <!-- Sort by Option Dropdown -->
       <v-col cols="12" sm="3" md="3">
         <v-select
           v-model="selectedSortOption"
@@ -48,6 +52,7 @@
     </v-row>
   </v-container>
 
+  <!-- Country List Display -->
   <v-container class="fill-height">
     <v-row no-gutters>
       <v-col
@@ -60,15 +65,16 @@
         xl="2"
         class="mb-10 pa-2"
       >
+        <!-- Lazy load country component to improve performance -->
         <v-lazy :min-height="170" :options="{ threshold: 0.7 }" transition="fab-transition">
           <SingleCountry
-          v-model:isLoaded="isLoaded[country.name.common]"
-          :country="country"
+            v-model:is-loaded="isLoaded[country.name.common]"
+            :country="country"
           ></SingleCountry>
         </v-lazy>
       </v-col>
 
-      <!-- Empty state -->
+      <!-- Display when no results are found -->
       <v-col
         v-if="filteredCountries?.length === 0 && !loadings.getCountries"
         class="justify-center d-flex"
@@ -81,12 +87,12 @@
 </template>
 
 <script setup lang="ts">
+import Fuse from 'fuse.js';
 import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import Fuse from 'fuse.js';
+import { useGlobal } from '@/store';
 import apiService from '@/apiService';
 import SingleCountry from '@/components/SingleCountry.vue';
-
 import type { Country } from '@/interfaces/country';
 
 interface SortOption {
@@ -94,7 +100,9 @@ interface SortOption {
   value: 'population' | 'name';
 }
 
-/* Variables */
+const globalStore = useGlobal();
+
+// Data references and initializations
 const countries = ref<Country[]>([]);
 const regions = ref<string[]>([]);
 const sortOptions = ref<SortOption[]>([
@@ -111,6 +119,7 @@ const isLoaded = ref<Record<string, boolean>>({});
 const router = useRouter();
 const route = useRoute();
 
+// Fuse.js options for fuzzy search
 const fuseOptions = {
   keys: ['name.common'],
   threshold: 0.4,
@@ -119,26 +128,22 @@ const fuseOptions = {
 };
 let fuse: Fuse<Country>;
 
-/** Helper Function to Format Population */
-const formatNumbers = (value: number): string => {
-  return value.toLocaleString();
-};
 
-/** Computed Property for Filtered and Sorted Countries */
+// Computed property for filtered and sorted countries
 const filteredCountries = computed(() => {
   if (!fuse) return countries.value;
 
-  // Fuzzy search on searchQuery
+  // Apply fuzzy search on searchQuery
   const searchResults = searchQuery.value
     ? fuse.search(searchQuery.value).map(result => result.item)
     : countries.value;
 
-  // Filter by regions
+  // Filter by selected region
   let result = searchResults.filter(country => {
     return !selectedRegion.value || country.region === selectedRegion.value;
   });
 
-  // Sort by selectedSortOption
+  // Sort by selected option
   if (selectedSortOption.value) {
     result.sort((a, b) => {
       if (selectedSortOption.value === 'population') {
@@ -149,10 +154,10 @@ const filteredCountries = computed(() => {
       return 0;
     });
   }
-
   return result;
 });
 
+// Fetch countries data and initialize Fuse.js
 const getCountries = async () => {
   loadings.getCountries = true;
   try {
@@ -167,13 +172,17 @@ const getCountries = async () => {
       isLoaded.value[country.name.common] = false;
     });
   } catch (error) {
-    errorMessages.value.push('Failed to load country data');
-    console.error(error);
+    const errorMessage =
+      (error as { response?: { message?: string }; message?: string })?.response?.message ||
+      (error as { message?: string })?.message ||
+      'An error has occurred';
+    globalStore.message = errorMessage;
   } finally {
     loadings.getCountries = false;
   }
 };
 
+// Update URL query parameters when filters change
 const updateQueryParams = () => {
   router.replace({
     query: {
@@ -184,10 +193,11 @@ const updateQueryParams = () => {
   });
 };
 
+// Watch for changes in search, region, or sort options
 watch([selectedRegion, selectedSortOption, searchQuery], updateQueryParams);
 
+// Initial fetch on component mount and retrieve query parameters
 onMounted(() => {
-  // Initialize queries
   const { region, sort, search } = route.query;
   selectedRegion.value = (region as string) || null;
   selectedSortOption.value = sort as 'population' | 'name' | null;
@@ -197,8 +207,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-
-.justify-content-between {
-  justify-content: space-between;
-}
+// .justify-content-between {
+//   justify-content: space-between;
+// }
 </style>
