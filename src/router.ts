@@ -24,14 +24,6 @@ const routes: RouteRecordRaw[] = [
     component: HomeView
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (About.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: async () => await import('@/views/AboutView.vue')
-  },
-  {
     path: '/:name',
     name: 'CountryDetails',
     component: async () => await import('@/views/CountryDetails.vue')
