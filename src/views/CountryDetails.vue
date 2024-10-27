@@ -117,7 +117,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive } from 'vue';
-import apiService from '@/apiService.js';
+import apiService from '@/apiService';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();

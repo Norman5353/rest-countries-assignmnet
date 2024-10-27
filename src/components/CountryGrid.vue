@@ -70,7 +70,7 @@
 
       <!-- Empty state -->
       <v-col
-        v-if="filteredCountries.length === 0 && !loadings.getCountries"
+        v-if="filteredCountries?.length === 0 && !loadings.getCountries"
         class="justify-center d-flex"
         cols="12"
       >
@@ -84,7 +84,7 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import Fuse from 'fuse.js';
-import apiService from '@/apiService.js';
+import apiService from '@/apiService';
 import SingleCountry from '@/components/SingleCountry.vue';
 
 import type { Country } from '@/interfaces/country';
